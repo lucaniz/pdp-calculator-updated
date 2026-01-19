@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDP Gas & Costs Calculator</title>
+  <title>PDP Gas & Costs Calculator (Zen Scenarios)</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; padding: 20px; line-height: 1.6; }
     h1 { color: #003049; }
@@ -19,57 +19,75 @@
     .avg  { background-color: #e0f0ff; }
     .avg2 { background-color: #f9f0ff; }
     .section-title { padding: 6px 10px; background-color: #b3e5fc; font-weight: bold; font-size: 16px; }
-    input, select { padding: 5px; width: 160px; }
+    input, select { padding: 5px; width: 200px; }
+    .note { font-size: 13px; color: #444; }
   </style>
 </head>
 <body>
 
 <h1>
   <img src="filecoin-logo.png" alt="Filecoin Logo" style="height: 35px; vertical-align: middle; margin-right: 10px;">
-  PDP Gas & Costs Calculator
+  PDP Gas & Costs Calculator (Zen Scenarios)
 </h1>
 
 <div class="description">
   <p>
     This calculator provides insights into Filecoin PDP gas costs, fees, and profitability.
-    Adjust deal price, FIL price, number of roots, and proof set size. Gas values are based on empirical data and on-chain analysis.
+    It supports two Zen-based scenarios with updated empirical gas measurements.
   </p>
-  <p>
-    Gas consumption estimates are based on empirical measurements:
-    <ul>
-      <li><code>ProvePossession</code> for a proofset of 100 roots costs ≈ 140 M gas.</li>
-      <li>Adding more roots increases cost by ~10 M per 10× roots.</li>
-      <li><code>NextProvingPeriod</code> adds 55 M gas (kept in this version).</li>
-      <li>Gas for <code>AddRoots</code> is excluded.</li>
-    </ul>
+
+  <p class="note">
+    <b>Scenario 1:</b> 1× <code>ProvePossession</code> + 1× <code>NextProvingPeriod</code> per day (no daily <code>AddPieces</code>).<br/>
+    <b>Scenario 2:</b> Scenario 1 + 1× <code>AddPieces</code> per day.
   </p>
+
   <p>
     Data references:
     <ul>
-      <li>PDP Verifier empirical gas data: 
+      <li>Old spreadsheet (Simple PDP service):
         <a href="https://docs.google.com/spreadsheets/d/1zQ8jLi_JnQk0l89ql3qRpBZjHay8IwmVte3rQi2lvvc/edit?gid=0#gid=0" target="_blank">Google Sheet</a>
       </li>
-      <li>Base fee data from 
+      <li>Base fee data from
         <a href="https://dashboard.starboard.ventures/dashboard/analytics#transactionsusage-network-fee" target="_blank">Starboard</a>.
       </li>
-      <li>Methodology discussion:
-        <a href="https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789" target="_blank">Filecoin Slack thread</a>
+      <li>Zen measurements (FOC Gas Measurements):
+        <a href="https://www.notion.so/FOC-Gas-Measurements-2e2dc41950c180368805ef76f6aa70d3?pvs=21" target="_blank">Notion doc</a>
       </li>
     </ul>
   </p>
 </div>
 
-<h2>Parameters</h2>
+<h2>Scenario Gas Units (Zen)</h2>
 <table>
-  <tr><td colspan="2" class="section-title">Gas Units</td></tr>
-  <tr><th>Description</th><th>Value</th></tr>
-  <tr><td><code>ProvePossession</code> (100 roots)</td><td>140,000,000</td></tr>
-  <tr><td><code>ProvePossession</code> (1 000 roots)</td><td>150,000,000</td></tr>
-  <tr><td><code>ProvePossession</code> (10 000 roots)</td><td>160,000,000</td></tr>
-  <tr><td><code>ProvePossession</code> (100 000 roots)</td><td>170,000,000</td></tr>
-  <tr><td><code>NextProvingPeriod</code></td><td>55,000,000</td></tr>
+  <tr><td colspan="3" class="section-title">Updated Measurements (Gas Units)</td></tr>
+  <tr>
+    <th>Operation</th>
+    <th>Scenario 1</th>
+    <th>Scenario 2</th>
+  </tr>
+  <tr>
+    <td><code>ProvePossession</code></td>
+    <td>200,000,000</td>
+    <td>200,000,000</td>
+  </tr>
+  <tr>
+    <td><code>NextProvingPeriod</code></td>
+    <td>166,000,000</td>
+    <td>166,000,000</td>
+  </tr>
+  <tr>
+    <td><code>AddPieces</code></td>
+    <td>0</td>
+    <td>235,000,000</td>
+  </tr>
+  <tr>
+    <td><b>Total gas per day (1 proof/day)</b></td>
+    <td><b>366,000,000</b></td>
+    <td><b>601,000,000</b></td>
+  </tr>
 </table>
 
+<h2>Base Fee (FIL)</h2>
 <table>
   <tr><td colspan="2" class="section-title">Base Fee (FIL)</td></tr>
   <tr><th>Description</th><th>Value</th></tr>
@@ -82,8 +100,20 @@
 <h2>Inputs</h2>
 <table>
   <tr><th>Description</th><th>Value</th></tr>
+
+  <tr>
+    <td>Scenario</td>
+    <td>
+      <select id="scenario">
+        <option value="S1" selected>Scenario 1 (PP + NPP)</option>
+        <option value="S2">Scenario 2 (PP + NPP + AddPieces)</option>
+      </select>
+    </td>
+  </tr>
+
   <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" id="dealPrice" value="2.5" step="0.1"/></td></tr>
   <tr><td>FIL price (USD)</td><td><input type="number" id="filPrice" value="1.5" step="0.1"/></td></tr>
+
   <tr><td>Number of roots</td><td>
     <select id="roots">
       <option value="100" selected>100</option>
@@ -92,6 +122,7 @@
       <option value="100000">100000</option>
     </select>
   </td></tr>
+
   <tr><td>Proof set size (GiB)</td><td><input type="number" id="proofSize" value="30" step="0.01"/></td></tr>
   <tr><td>Average root size (MB)</td><td><input type="number" id="avgRootSize" readonly/></td></tr>
   <tr><td>Proofs per day</td><td><input type="number" id="proofsPerDay" value="1"/></td></tr>
@@ -114,57 +145,72 @@
 </table>
 
 <script>
-const gasUnitsMap = { 100: 140000000, 1000: 150000000, 10000: 160000000, 100000: 170000000 };
-const baseFees = { High: 1e-10, Low: 1e-16, Mar2025: 5.56e-12, Avg30d: 2.51e-14 };
-const nextProvingPeriodGas = 55000000;
+  // Scenario gas units (Zen, rounded)
+  const SCENARIOS = {
+    S1: { provePossession: 200000000, nextProvingPeriod: 166000000, addPieces: 0 },
+    S2: { provePossession: 200000000, nextProvingPeriod: 166000000, addPieces: 235000000 }
+  };
 
-function fmt(n, d=6){ return isFinite(n)?Number(n).toFixed(d):"0"; }
+  // Base fee tiers (FIL per gas unit)
+  const baseFees = { High: 1e-10, Low: 1e-16, Mar2025: 5.56e-12, Avg30d: 2.51e-14 };
 
-function calculate(){
-  const dealPrice = parseFloat(document.getElementById("dealPrice").value);
-  const filPrice  = parseFloat(document.getElementById("filPrice").value);
-  const roots     = parseInt(document.getElementById("roots").value);
-  const proofSizeGiB = parseFloat(document.getElementById("proofSize").value);
-  const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
-  const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value);
+  // Kept to preserve UI behavior for "average root size" — not used in gas anymore.
+  const rootsForAvg = () => parseInt(document.getElementById("roots").value, 10);
 
-  // Average root size (MB) as integer
-  const avgRootSizeMB = Math.round((proofSizeGiB / roots) * 1000);
-  document.getElementById("avgRootSize").value = avgRootSizeMB;
+  function fmt(n, d=6){ return isFinite(n) ? Number(n).toFixed(d) : "0"; }
 
-  // bytes in proofset (binary)
-  const bytes = proofSizeGiB * 1024 ** 3;
+  function calculate(){
+    const scenarioKey = document.getElementById("scenario").value;
+    const scenario = SCENARIOS[scenarioKey];
 
-  // reward per byte (TiB = 2^40)
-  const rewardUSD_per_byte = dealPrice / (30 * 2 ** 40);
-  const rewardFIL_per_byte = rewardUSD_per_byte / filPrice;
-  const rewardFIL = rewardFIL_per_byte * bytes;
+    const dealPrice = parseFloat(document.getElementById("dealPrice").value);
+    const filPrice  = parseFloat(document.getElementById("filPrice").value);
+    const roots     = rootsForAvg();
+    const proofSizeGiB = parseFloat(document.getElementById("proofSize").value);
+    const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value, 10);
+    const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value);
 
-  const pdpDailyFee = pdpPerGiBPerProof * proofSizeGiB * proofsPerDay;
-  const baseGas = gasUnitsMap[roots] + nextProvingPeriodGas;
+    // Average root size (MB) as integer (kept from original)
+    const avgRootSizeMB = Math.round((proofSizeGiB / roots) * 1000);
+    document.getElementById("avgRootSize").value = avgRootSizeMB;
 
-  for (const tier in baseFees){
-    const baseFee = baseFees[tier];
-    const gasFeeSingle = baseFee * baseGas;
-    const gasFee = gasFeeSingle * proofsPerDay;
-    const profitFIL = rewardFIL - gasFee - pdpDailyFee;
-    const profitUSD = profitFIL * filPrice;
-    const profitUSDMonth = profitUSD * 30;
+    // bytes in proofset (binary)
+    const bytes = proofSizeGiB * 1024 ** 3;
 
-    const suffix = tier === "High" ? "High" :
-                   tier === "Low" ? "Low" :
-                   tier === "Mar2025" ? "Mar2025" : "Avg30d";
+    // reward per byte (TiB = 2^40)
+    const rewardUSD_per_byte = dealPrice / (30 * 2 ** 40);
+    const rewardFIL_per_byte = rewardUSD_per_byte / filPrice;
+    const rewardFIL = rewardFIL_per_byte * bytes;
 
-    document.getElementById("gas" + suffix).textContent = fmt(gasFee);
-    document.getElementById("pdp" + suffix).textContent = fmt(pdpDailyFee);
-    document.getElementById("profit" + suffix).textContent = fmt(profitFIL);
-    document.getElementById("profitUSD" + suffix).textContent = fmt(profitUSD, 4);
-    document.getElementById("profitUSDMonth" + suffix).textContent = fmt(profitUSDMonth, 4);
+    // PDP fee (per proof)
+    const pdpDailyFee = pdpPerGiBPerProof * proofSizeGiB * proofsPerDay;
+
+    // Scenario gas per day (scaled by proofs/day)
+    const gasPerProof = scenario.provePossession + scenario.nextProvingPeriod + scenario.addPieces;
+    const baseGas = gasPerProof * proofsPerDay;
+
+    for (const tier in baseFees){
+      const baseFee = baseFees[tier];
+      const gasFee = baseFee * baseGas;
+
+      const profitFIL = rewardFIL - gasFee - pdpDailyFee;
+      const profitUSD = profitFIL * filPrice;
+      const profitUSDMonth = profitUSD * 30;
+
+      const suffix = tier === "High" ? "High" :
+                     tier === "Low" ? "Low" :
+                     tier === "Mar2025" ? "Mar2025" : "Avg30d";
+
+      document.getElementById("gas" + suffix).textContent = fmt(gasFee);
+      document.getElementById("pdp" + suffix).textContent = fmt(pdpDailyFee);
+      document.getElementById("profit" + suffix).textContent = fmt(profitFIL);
+      document.getElementById("profitUSD" + suffix).textContent = fmt(profitUSD, 4);
+      document.getElementById("profitUSDMonth" + suffix).textContent = fmt(profitUSDMonth, 4);
+    }
   }
-}
 
-document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculate));
-calculate();
+  document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculate));
+  calculate();
 </script>
 
 </body>
