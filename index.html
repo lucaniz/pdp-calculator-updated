@@ -47,11 +47,15 @@
       <li>Old spreadsheet (Simple PDP service):
         <a href="https://docs.google.com/spreadsheets/d/1zQ8jLi_JnQk0l89ql3qRpBZjHay8IwmVte3rQi2lvvc/edit?gid=0#gid=0" target="_blank">Google Sheet</a>
       </li>
-      <li>Base fee data from
-        <a href="https://dashboard.starboard.ventures/dashboard/analytics#transactionsusage-network-fee" target="_blank">Starboard</a>.
+      <li>
+        Basefee data from Starboard:
+        <a href="https://dashboard.starboard.ventures/dashboard/analytics#transactionsusage-network-fee" target="_blank">Starboard</a>
+        (Spreadsheet:
+        <a href="https://docs.google.com/spreadsheets/d/1U-cMVgiUhvdQhlGxbefBrOZZm2DsZHvH-1a2vaKUoKc/edit?gid=154688514#gid=154688514" target="_blank">Google Sheet</a>)
       </li>
-      <li>Zen measurements (FOC Gas Measurements):
-        <a href="https://www.notion.so/FOC-Gas-Measurements-2e2dc41950c180368805ef76f6aa70d3?pvs=21" target="_blank">Notion doc</a>
+      <li>
+        FOC latest empirical gas measurements and analysis (Notion):
+        <a href="https://www.notion.so/filecoindev/Updated-Gas-Cost-Analysis-for-PDP-2e3dc41950c180e49128e06ad0ff1c69" target="_blank">Notion</a>
       </li>
     </ul>
   </p>
@@ -93,8 +97,8 @@
   <tr><th>Description</th><th>Value</th></tr>
   <tr><td>High base fee (0.1 nanoFIL)</td><td>1e-10</td></tr>
   <tr><td>Low base fee (100 attoFIL)</td><td>1e-16</td></tr>
-  <tr><td>March 2025 average</td><td>5.56e-12</td></tr>
-  <tr><td>30-day average (Sep 20–Oct 20 2025)</td><td>2.51e-14</td></tr>
+  <tr><td>Dec 18th 2025 - Jan 18th 2025 avg basefee</td><td>5.52e-15</td></tr>
+  <tr><td>30-day avg base fee (Oct 22, 2025–Jan 18, 2026)</td><td>1.01e-16</td></tr>
 </table>
 
 <h2>Inputs</h2>
@@ -134,14 +138,14 @@
     <th>Description</th>
     <th class="high">High base fee</th>
     <th class="low">Low base fee</th>
-    <th class="avg">March 2025 avg base fee</th>
-    <th class="avg2">30-day avg base fee (Sep 20–Oct 20 2025)</th>
+    <th class="avg">Dec 18th 2025 - Jan 18th 2025 avg basefee</th>
+    <th class="avg2">30-day avg base fee (Oct 22, 2025–Jan 18, 2026)</th>
   </tr>
-  <tr><td>Daily gas fee (FIL)</td><td class="high" id="gasHigh"></td><td class="low" id="gasLow"></td><td class="avg" id="gasMar2025"></td><td class="avg2" id="gasAvg30d"></td></tr>
-  <tr><td>Daily PDP proof fee (FIL)</td><td class="high" id="pdpHigh"></td><td class="low" id="pdpLow"></td><td class="avg" id="pdpMar2025"></td><td class="avg2" id="pdpAvg30d"></td></tr>
-  <tr><td>Daily profit (FIL)</td><td class="high" id="profitHigh"></td><td class="low" id="profitLow"></td><td class="avg" id="profitMar2025"></td><td class="avg2" id="profitAvg30d"></td></tr>
-  <tr><td>Daily profit (USD)</td><td class="high" id="profitUSDHigh"></td><td class="low" id="profitUSDLow"></td><td class="avg" id="profitUSDMar2025"></td><td class="avg2" id="profitUSDAvg30d"></td></tr>
-  <tr><td>Monthly profit (USD)</td><td class="high" id="profitUSDMonthHigh"></td><td class="low" id="profitUSDMonthLow"></td><td class="avg" id="profitUSDMonthMar2025"></td><td class="avg2" id="profitUSDMonthAvg30d"></td></tr>
+  <tr><td>Daily gas fee (FIL)</td><td class="high" id="gasHigh"></td><td class="low" id="gasLow"></td><td class="avg" id="gasDecJan"></td><td class="avg2" id="gasAvg30d"></td></tr>
+  <tr><td>Daily PDP proof fee (FIL)</td><td class="high" id="pdpHigh"></td><td class="low" id="pdpLow"></td><td class="avg" id="pdpDecJan"></td><td class="avg2" id="pdpAvg30d"></td></tr>
+  <tr><td>Daily profit (FIL)</td><td class="high" id="profitHigh"></td><td class="low" id="profitLow"></td><td class="avg" id="profitDecJan"></td><td class="avg2" id="profitAvg30d"></td></tr>
+  <tr><td>Daily profit (USD)</td><td class="high" id="profitUSDHigh"></td><td class="low" id="profitUSDLow"></td><td class="avg" id="profitUSDDecJan"></td><td class="avg2" id="profitUSDAvg30d"></td></tr>
+  <tr><td>Monthly profit (USD)</td><td class="high" id="profitUSDMonthHigh"></td><td class="low" id="profitUSDMonthLow"></td><td class="avg" id="profitUSDMonthDecJan"></td><td class="avg2" id="profitUSDMonthAvg30d"></td></tr>
 </table>
 
 <script>
@@ -152,12 +156,18 @@
   };
 
   // Base fee tiers (FIL per gas unit)
-  const baseFees = { High: 1e-10, Low: 1e-16, Mar2025: 5.56e-12, Avg30d: 2.51e-14 };
+  const baseFees = {
+    High: 1e-10,
+    Low: 1e-16,
+    DecJan: 5.52e-15,
+    Avg30d: 1.01e-16
+  };
 
-  // Kept to preserve UI behavior for "average root size" — not used in gas anymore.
-  const rootsForAvg = () => parseInt(document.getElementById("roots").value, 10);
-
-  function fmt(n, d=6){ return isFinite(n) ? Number(n).toFixed(d) : "0"; }
+  // Formatters
+  // - FIL values: up to 10 decimals so "Low base fee" doesn't round to 0
+  // - USD values: keep 4 decimals
+  const fmtFIL = (n, d = 10) => isFinite(n) ? Number(n).toFixed(d) : "0";
+  const fmtUSD = (n, d = 4)  => isFinite(n) ? Number(n).toFixed(d) : "0";
 
   function calculate(){
     const scenarioKey = document.getElementById("scenario").value;
@@ -165,12 +175,12 @@
 
     const dealPrice = parseFloat(document.getElementById("dealPrice").value);
     const filPrice  = parseFloat(document.getElementById("filPrice").value);
-    const roots     = rootsForAvg();
+    const roots     = parseInt(document.getElementById("roots").value, 10);
     const proofSizeGiB = parseFloat(document.getElementById("proofSize").value);
     const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value, 10);
     const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value);
 
-    // Average root size (MB) as integer (kept from original)
+    // Average root size (display only; does not affect gas/profits in scenario mode)
     const avgRootSizeMB = Math.round((proofSizeGiB / roots) * 1000);
     document.getElementById("avgRootSize").value = avgRootSizeMB;
 
@@ -182,11 +192,15 @@
     const rewardFIL_per_byte = rewardUSD_per_byte / filPrice;
     const rewardFIL = rewardFIL_per_byte * bytes;
 
-    // PDP fee (per proof)
+    // PDP fee (FIL/day)
     const pdpDailyFee = pdpPerGiBPerProof * proofSizeGiB * proofsPerDay;
 
-    // Scenario gas per day (scaled by proofs/day)
-    const gasPerProof = scenario.provePossession + scenario.nextProvingPeriod + scenario.addPieces;
+    // Gas per day
+    const gasPerProof =
+      scenario.provePossession +
+      scenario.nextProvingPeriod +
+      scenario.addPieces;
+
     const baseGas = gasPerProof * proofsPerDay;
 
     for (const tier in baseFees){
@@ -197,15 +211,17 @@
       const profitUSD = profitFIL * filPrice;
       const profitUSDMonth = profitUSD * 30;
 
-      const suffix = tier === "High" ? "High" :
-                     tier === "Low" ? "Low" :
-                     tier === "Mar2025" ? "Mar2025" : "Avg30d";
+      const suffix =
+        tier === "High" ? "High" :
+        tier === "Low" ? "Low" :
+        tier === "DecJan" ? "DecJan" : "Avg30d";
 
-      document.getElementById("gas" + suffix).textContent = fmt(gasFee);
-      document.getElementById("pdp" + suffix).textContent = fmt(pdpDailyFee);
-      document.getElementById("profit" + suffix).textContent = fmt(profitFIL);
-      document.getElementById("profitUSD" + suffix).textContent = fmt(profitUSD, 4);
-      document.getElementById("profitUSDMonth" + suffix).textContent = fmt(profitUSDMonth, 4);
+      document.getElementById("gas" + suffix).textContent = fmtFIL(gasFee);
+      document.getElementById("pdp" + suffix).textContent = fmtFIL(pdpDailyFee);
+      document.getElementById("profit" + suffix).textContent = fmtFIL(profitFIL);
+
+      document.getElementById("profitUSD" + suffix).textContent = fmtUSD(profitUSD);
+      document.getElementById("profitUSDMonth" + suffix).textContent = fmtUSD(profitUSDMonth);
     }
   }
 
